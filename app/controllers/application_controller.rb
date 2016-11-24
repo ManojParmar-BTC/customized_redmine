@@ -35,7 +35,6 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery
 
-  before_action :updates_from_github, only: [:index]
   def verify_authenticity_token
     unless api_request?
       super
@@ -674,32 +673,5 @@ class ApplicationController < ActionController::Base
   # doesn't use the layout for api requests
   def _include_layout?(*args)
     api_request? ? false : super
-  end
-
-  def updates_from_github
-    if params[:controller] == "github_hook" && params[:issue].present?
-      Issue.find_or_create_by!(subject: params[:issue][:title], 
-                              description: params[:issue][:body], 
-                              priority_id: IssuePriority.first.id, 
-                              tracker_id: 1, 
-                              project_id: 1,
-                              status_id: IssueStatus.find_or_create_by(name: params[:issue][:state]).id, 
-                              author_id: User.where(admin: true).first.id, 
-                              start_date: Date.parse(params[:issue][:created_at]));
-    end
-  end
-
-  def get_response(path)
-    begin
-      uri = URI(path)
-      http_response = Net::HTTP.get_response(uri)
-      response = JSON(http_response.body).symbolize_keys
-      if response[:message].present?
-        raise StandardError.new(response[:message])
-      end
-      response
-    rescue => e
-      puts "error #{e}"
-    end
   end
 end
