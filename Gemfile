@@ -3,7 +3,8 @@ source 'https://rubygems.org'
 if Gem::Version.new(Bundler::VERSION) < Gem::Version.new('1.5.0')
   abort "Redmine requires Bundler 1.5.0 or higher (you're using #{Bundler::VERSION}).\nPlease update with 'gem update bundler'."
 end
-
+gem "github_api"
+gem "redmine_github_hook"
 gem "rails", "4.2.7.1"
 gem "addressable", "2.4.0" if RUBY_VERSION < "2.0"
 gem "jquery-rails", "~> 3.1.4"
@@ -15,7 +16,6 @@ gem "protected_attributes"
 gem "actionpack-xml_parser"
 gem "roadie-rails"
 gem "mimemagic"
-
 # Request at least nokogiri 1.6.7.2 because of security advisories
 gem "nokogiri", ">= 1.6.7.2"
 
@@ -93,6 +93,7 @@ else
 end
 
 group :development do
+  gem "pry"
   gem "rdoc", "~> 4.3"
   gem "yard"
 end

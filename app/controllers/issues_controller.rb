@@ -139,6 +139,7 @@ class IssuesController < ApplicationController
     call_hook(:controller_issues_new_before_save, { :params => params, :issue => @issue })
     @issue.save_attachments(params[:attachments] || (params[:issue] && params[:issue][:uploads]))
     if @issue.save
+      create_issue_on_github(@issue)
       call_hook(:controller_issues_new_after_save, { :params => params, :issue => @issue})
       respond_to do |format|
         format.html {
@@ -564,5 +565,11 @@ class IssuesController < ApplicationController
     else
       redirect_to issue_path(@issue)
     end
+  end
+
+  def create_issue_on_github(issue)
+    github = Github.new login: 'ManojParmar-BTC', password: 'Indian1509#'
+    github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine',
+    title: issue.subject, body: issue.description, labels: [issue.priority.name])
   end
 end

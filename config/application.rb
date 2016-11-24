@@ -71,7 +71,7 @@ module RedmineApp
     # Configure log level here so that additional environment file
     # can change it (environments/ENV.rb would take precedence over it)
     config.log_level = Rails.env.production? ? :info : :debug
-
+    config.action_controller.allow_forgery_protection = false
     config.session_store :cookie_store,
       :key => '_redmine_session',
       :path => config.relative_url_root || '/'
