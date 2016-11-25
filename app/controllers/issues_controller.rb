@@ -570,10 +570,18 @@ class IssuesController < ApplicationController
 
   def create_issue_on_github(issue)
     begin 
+      description = issue.description
+      if issue.attachments.present?
+        description += " " 
+        issue.attachments.each do |attachment|
+          description += "![codeforest](https://e3dbfbbd.ngrok.io/attachments/download/#{attachment.id}/#{attachment.filename})"
+          description += " "
+        end
+      end
       user_token = UserAuthentication.find_by(user_id: User.current.id)
       user_token.present? ? token = user_token.token : token = "" 
       github = Github.new oauth_token: token
-      github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: @issue.subject, body: @issue.description, labels: [@issue.priority.name])
+      github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: issue.subject, body: description, labels: [issue.priority.name])
       nil
     rescue Exception => e  
       puts ">>>>>>>>> Error in creating issue on Github: #{e.message}"
