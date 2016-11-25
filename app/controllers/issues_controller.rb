@@ -139,11 +139,13 @@ class IssuesController < ApplicationController
     call_hook(:controller_issues_new_before_save, { :params => params, :issue => @issue })
     @issue.save_attachments(params[:attachments] || (params[:issue] && params[:issue][:uploads]))
     if @issue.save
+      message = create_issue_on_github(@issue)
       call_hook(:controller_issues_new_after_save, { :params => params, :issue => @issue})
       respond_to do |format|
         format.html {
           render_attachment_warning_if_needed(@issue)
           flash[:notice] = l(:notice_issue_successful_create, :id => view_context.link_to("##{@issue.id}", issue_path(@issue), :title => @issue.subject))
+          flash[:notice] = message if message.present?
           redirect_after_create
         }
         format.api  { render :action => 'show', :status => :created, :location => issue_url(@issue) }
@@ -563,6 +565,19 @@ class IssuesController < ApplicationController
       end
     else
       redirect_to issue_path(@issue)
+    end
+  end
+
+  def create_issue_on_github(issue)
+    begin 
+      user_token = UserAuthentication.find_by(user_id: User.current.id)
+      user_token.present? ? token = user_token.token : token = "" 
+      github = Github.new oauth_token: token
+      github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: @issue.subject, body: @issue.description, labels: [@issue.priority.name])
+      nil
+    rescue Exception => e  
+      puts ">>>>>>>>> Error in creating issue on Github: #{e.message}"
+      "Issue ##{issue.id} created. not created on github (ERROR: #{e.message})"
     end
   end
 end
