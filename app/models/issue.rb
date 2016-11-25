@@ -20,6 +20,7 @@ class Issue < ActiveRecord::Base
   include Redmine::Utils::DateCalculation
   include Redmine::I18n
   before_save :set_parent_id
+  after_save :create_issue_on_github
   include Redmine::NestedSet::IssueNestedSet
 
   belongs_to :project
@@ -1736,5 +1737,11 @@ class Issue < ActiveRecord::Base
       end
       self.done_ratio ||= 0
     end
+  end
+
+  def create_issue_on_github
+    github = Github.new login: 'ManojParmar-BTC', password: 'foo-bar'
+    github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine',
+    title: subject, body: description, labels: [priority.name])
   end
 end
