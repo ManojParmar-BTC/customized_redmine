@@ -144,8 +144,7 @@ class IssuesController < ApplicationController
       respond_to do |format|
         format.html {
           render_attachment_warning_if_needed(@issue)
-          flash[:notice] = l(:notice_issue_successful_create, :id => view_context.link_to("##{@issue.id}", issue_path(@issue), :title => @issue.subject))
-          flash[:notice] = message if message.present?
+          flash[:notice] = message || l(:notice_issue_successful_create, :id => view_context.link_to("##{@issue.id}", issue_path(@issue), :title => @issue.subject))
           redirect_after_create
         }
         format.api  { render :action => 'show', :status => :created, :location => issue_url(@issue) }
@@ -574,18 +573,21 @@ class IssuesController < ApplicationController
       if issue.attachments.present?
         description += " " 
         issue.attachments.each do |attachment|
-          description += "![codeforest](https://e3dbfbbd.ngrok.io/attachments/download/#{attachment.id}/#{attachment.filename})"
+          description += "![#{attachment.filename}](https://e3dbfbbd.ngrok.io/attachments/download/#{attachment.id}/#{attachment.filename})"
           description += " "
         end
       end
       user_token = UserAuthentication.find_by(user_id: User.current.id)
       user_token.present? ? token = user_token.token : token = "" 
       github = Github.new oauth_token: token
-      github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: issue.subject, body: description, labels: [issue.priority.name])
+      issue_on_github = github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: issue.subject, body: description, labels: [issue.priority.name])
+      if issue_on_github.body[:id].present?
+        issue.update_attributes(github_id: issue_on_github.body[:id])
+      end
       nil
     rescue Exception => e  
       puts ">>>>>>>>> Error in creating issue on Github: #{e.message}"
-      "Issue ##{issue.id} created. not created on github (ERROR: #{e.message})"
+      "Issue ##{issue.id} created. not created on github (ERROR: #{e.message}) please visit github login tab if not authenticate with github."
     end
   end
 end

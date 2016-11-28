@@ -18,14 +18,20 @@ class PullRequestsController < ApplicationController
     end
 
     if params[:issue].present?
-      Issue.find_or_create_by!(subject: params[:issue][:title], 
-                              description: params[:issue][:body], 
-                              priority_id: IssuePriority.first.id, 
-                              tracker_id: 1, 
-                              project_id: Project.find_by(identifier: params[:project_id]).id,
-                              status_id: IssueStatus.find_or_create_by(name: params[:issue][:state]).id, 
-                              author_id: User.where(admin: true).first.id, 
-                              start_date: Date.parse(params[:issue][:created_at]));
+      begin
+        project = Project.find_by(identifier: params[:project_id])
+        issue = Issue.find_or_create_by(github_id: params[:issue][:id])
+        issue.update_attributes(subject: params[:issue][:title], 
+                                description: params[:issue][:body], 
+                                priority_id: IssuePriority.where(project_id: project.id).first.id, 
+                                tracker_id: project.trackers.first, 
+                                project_id: project.id,
+                                status_id: IssueStatus.find_or_create_by(name: params[:issue][:state]).id, 
+                                author_id: User.where(admin: true).first.id, 
+                                start_date: Date.parse(params[:issue][:created_at]));
+      rescue => e
+        puts "error #{e}"
+      end
     end
   end
 
