@@ -573,13 +573,14 @@ class IssuesController < ApplicationController
       if issue.attachments.present?
         description += " " 
         issue.attachments.each do |attachment|
-          description += "![#{attachment.filename}](https://e3dbfbbd.ngrok.io/attachments/download/#{attachment.id}/#{attachment.filename})"
+          description += "![codeforest](https://e3dbfbbd.ngrok.io/attachments/download/#{attachment.id}/#{attachment.filename})"
           description += " "
         end
       end
       user_token = UserAuthentication.find_by(user_id: User.current.id)
       user_token.present? ? token = user_token.token : token = "" 
       github = Github.new oauth_token: token
+      binding.pry
       issue_on_github = github.issues.create(user: 'ManojParmar-BTC', repo: 'test_redmine', owner: 'ManojParmar-BTC', title: issue.subject, body: description, labels: [issue.priority.name])
       if issue_on_github.body[:id].present?
         issue.update_attributes(github_id: issue_on_github.body[:id])
