@@ -29,6 +29,7 @@ class PullRequestsController < ApplicationController
                               author_id: User.where(admin: true).first.id, 
                               start_date: Date.parse(params[:issue][:created_at]));
     end
+    render nothing: true, status: :ok
   end
 
   def get_response(path)
