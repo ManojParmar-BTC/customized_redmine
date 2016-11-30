@@ -79,5 +79,7 @@ module RedmineApp
     if File.exists?(File.join(File.dirname(__FILE__), 'additional_environment.rb'))
       instance_eval File.read(File.join(File.dirname(__FILE__), 'additional_environment.rb'))
     end
+
+    config.secret_token = "c1eeeb8a57c521e85c94c6bd196ea3c640b1edd931156ccaf64e1af4579e25861ac488328aaf7dcc07e08c60ef70029ff2d23c0a6d51aafc0ee3b3d96287c67a"
   end
 end
